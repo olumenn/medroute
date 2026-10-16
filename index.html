@@ -44,7 +44,6 @@
         }
     </script>
     <style>
-        /* Pulse wave animation for SOS button */
         .sos-glow {
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
             animation: sosPulse 1.8s infinite;
@@ -69,7 +68,6 @@
 </head>
 <body class="h-full text-slate-800 antialiased flex flex-col font-sans">
 
-    <!-- Top Navigation Header -->
     <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -105,7 +103,6 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <!-- Live Location Banner -->
         <div id="location-status-bar" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
             <div class="flex items-center space-x-3 text-brand-900">
                 <div class="p-2 bg-brand-100 rounded-lg text-brand-600">
@@ -242,6 +239,89 @@
             </div>
         </section>
 
+        <section id="view-triage" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 max-w-3xl mx-auto">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-12 h-12 bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+                        <i class="fa-solid fa-user-doctor"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Emergency Symptom Triage</h2>
+                        <p class="text-slate-500 text-xs">Answer a few rapid questions to gauge urgency and find appropriate trauma or urgent care centers.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Primary Symptom / Condition</label>
+                        <select id="triage-symptom" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="chest_pain">Severe Chest Pain / Difficulty Breathing</option>
+                            <option value="bleeding">Severe Uncontrolled Bleeding / Trauma</option>
+                            <option value="fever">High Fever / Convulsion / Unresponsive</option>
+                            <option value="maternity">Active Labor / Pregnancy Complication</option>
+                            <option value="fracture">Bone Fracture / Joint Injury</option>
+                            <option value="minor">Minor Cut / Mild Illness</option>
+                        </select>
+                    </div>
+
+                    <button onclick="runTriageCheck()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl transition text-sm flex items-center justify-center space-x-2 shadow-md">
+                        <i class="fa-solid fa-stethoscope"></i>
+                        <span>Assess Triage Level</span>
+                    </button>
+
+                    <div id="triage-result-box" class="hidden mt-4 p-4 rounded-xl border"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-firstaid" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 max-w-4xl mx-auto space-y-4">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+                        <i class="fa-solid fa-kit-medical"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Emergency First Aid Instructions</h2>
+                        <p class="text-slate-500 text-xs">Immediate life-saving procedures while emergency dispatch or transport is on the way.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer" onclick="showFirstAidModal('CPR Protocol (Adults)', '1. Place hands on center of chest.\n2. Push hard and fast at 100-120 bpm.\n3. Continue until paramedics arrive.')">
+                        <div class="flex items-center space-x-3 text-brand-600 font-bold mb-2">
+                            <i class="fa-solid fa-heart-pulse text-lg"></i>
+                            <span>Cardiopulmonary Resuscitation (CPR)</span>
+                        </div>
+                        <p class="text-xs text-slate-600">Chest compression technique for non-responsive patients with no pulse.</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer" onclick="showFirstAidModal('Bleeding Control', '1. Apply firm direct pressure with clean cloth.\n2. Elevate injured limb if possible.\n3. Do NOT remove soaked cloth; add more on top.')">
+                        <div class="flex items-center space-x-3 text-emergency-600 font-bold mb-2">
+                            <i class="fa-solid fa-droplet text-lg"></i>
+                            <span>Severe Bleeding & Hemorrhage</span>
+                        </div>
+                        <p class="text-xs text-slate-600">Direct pressure technique and tourniquet application for arterial bleeding.</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer" onclick="showFirstAidModal('Choking Response', '1. Stand behind person.\n2. Give 5 quick abdominal thrusts (Heimlich maneuver).\n3. Alternate with 5 back blows until clear.')">
+                        <div class="flex items-center space-x-3 text-amber-600 font-bold mb-2">
+                            <i class="fa-solid fa-lungs text-lg"></i>
+                            <span>Airway Obstruction (Choking)</span>
+                        </div>
+                        <p class="text-xs text-slate-600">Heimlich maneuver and back blows for obstructed airways in adults and kids.</p>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer" onclick="showFirstAidModal('Burns Care', '1. Cool burn with cool running water for 10-20 mins.\n2. Do NOT apply ice, butter, or paste.\n3. Cover loosely with clean non-stick dressing.')">
+                        <div class="flex items-center space-x-3 text-orange-600 font-bold mb-2">
+                            <i class="fa-solid fa-fire-flame-curd text-lg"></i>
+                            <span>Thermal & Chemical Burns</span>
+                        </div>
+                        <p class="text-xs text-slate-600">Immediate cooling measures and sterile covering procedures.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="view-ambulance" class="hidden space-y-6">
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 max-w-4xl mx-auto">
                 <div class="flex items-center space-x-3 mb-6">
@@ -332,8 +412,8 @@
                 </div>
             </div>
         </section>
+    </main>
 
-    <!-- SOS Emergency Dialog Modal -->
     <div id="sos-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 text-center space-y-5 shadow-2xl border border-red-100">
             <div class="w-20 h-20 bg-emergency-100 text-emergency-600 rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce">
@@ -359,14 +439,12 @@
         </div>
     </div>
 
-    <!-- Global Toast Notification Element -->
     <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3 transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none">
         <div class="w-2.5 h-2.5 bg-teal-400 rounded-full animate-ping"></div>
         <span id="toast-message" class="text-xs font-semibold">Notification message</span>
     </div>
 
     <script>
-        // Nigerian Sample Real Hospital Database
         const hospitalDatabase = [
             {
                 id: 1,
@@ -419,7 +497,7 @@
                 type: "State Level 1 Emergency Hospital",
                 distanceKm: 12.3,
                 etaMins: 28,
-                address: " Oba Akinjobi Way, GRA, Ikeja, Lagos",
+                address: "Oba Akinjobi Way, GRA, Ikeja, Lagos",
                 phone: "+234 808 557 7243",
                 icuAvailable: true,
                 icuBedsCount: 12,
@@ -432,13 +510,11 @@
 
         let selectedHospital = null;
 
-        // Initialize App on DOM Load
         window.addEventListener('DOMContentLoaded', () => {
             renderHospitals(hospitalDatabase);
             detectLocation();
         });
 
-        // Navigation Handler
         function showSection(sectionId) {
             const sections = ['search', 'triage', 'ambulance', 'firstaid'];
             sections.forEach(id => {
@@ -454,9 +530,9 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Render Hospital List Cards
         function renderHospitals(list) {
             const container = document.getElementById('hospital-list-container');
+            if (!container) return;
             container.innerHTML = '';
 
             if (list.length === 0) {
@@ -477,7 +553,7 @@
                 card.onclick = () => selectHospitalById(hosp.id);
 
                 card.innerHTML = `
-                    <img src="${hosp.image}" alt="${hosp.name}" class="w-full sm:w-36 h-32 object-cover rounded-xl flex-shrink-0">
+                    <img src="${hosp.image}" alt="${hosp.name}" class="w-full sm:w-36 h-32 object-cover rounded-xl flex-shrink-0" onerror="this.src='https://placehold.co/300x200/e2e8f0/1e293b?text=Hospital'">
                     <div class="flex-1 flex flex-col justify-between">
                         <div>
                             <div class="flex items-start justify-between">
@@ -516,23 +592,20 @@
             });
         }
 
-        // Location Detection Simulation (Nigerian Metropolitan Focus)
         function detectLocation() {
             const locText = document.getElementById('user-location-text');
-            locText.innerText = "Locating GPS in Nigeria...";
+            if (locText) locText.innerText = "Locating GPS in Nigeria...";
             
             setTimeout(() => {
-                locText.innerText = "Yaba / Surulere District, Lagos State, Nigeria (6.5244° N, 3.3792° E)";
+                if (locText) locText.innerText = "Yaba / Surulere District, Lagos State, Nigeria (6.5244° N, 3.3792° E)";
                 showToast("GPS Location Updated for Lagos State");
             }, 1200);
         }
 
-        // Direct Call Simulation
         function triggerCall(phoneNumber) {
             showToast(`Initiating emergency dialer call to: ${phoneNumber}`);
         }
 
-        // Generic Toast Notification
         function showToast(message) {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-message');
@@ -547,9 +620,120 @@
             }
         }
 
-        // First Aid Modal Helper
+        function triggerSOSModal() {
+            const modal = document.getElementById('sos-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeSOSModal() {
+            const modal = document.getElementById('sos-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function dispatchSOSNotification() {
+            closeSOSModal();
+            showToast("Emergency Signal & GPS Broadcasted to Nearby Hospitals & LASEMA Hotline!");
+        }
+
+        function filterHospitals() {
+            const searchVal = document.getElementById('hospital-search')?.value.toLowerCase() || '';
+            const specVal = document.getElementById('filter-specialty')?.value || 'all';
+            const distVal = parseFloat(document.getElementById('filter-distance')?.value || '30');
+            const icuOnly = document.getElementById('filter-icu')?.checked || false;
+
+            const filtered = hospitalDatabase.filter(h => {
+                const matchesSearch = h.name.toLowerCase().includes(searchVal) || h.address.toLowerCase().includes(searchVal);
+                const matchesSpec = specVal === 'all' || h.specialties.includes(specVal);
+                const matchesDist = h.distanceKm <= distVal;
+                const matchesIcu = !icuOnly || h.icuAvailable;
+
+                return matchesSearch && matchesSpec && matchesDist && matchesIcu;
+            });
+
+            renderHospitals(filtered);
+        }
+
+        function selectHospitalById(id) {
+            const found = hospitalDatabase.find(h => h.id === id);
+            if (!found) return;
+
+            selectedHospital = found;
+            renderHospitals(hospitalDatabase);
+
+            const targetName = document.getElementById('map-target-name');
+            const targetEta = document.getElementById('map-target-eta');
+            const activeLabel = document.getElementById('active-route-label');
+            const navBtn = document.getElementById('map-navigate-btn');
+
+            if (targetName) targetName.innerText = found.name;
+            if (targetEta) targetEta.innerText = `Estimated Arrival: ~${found.etaMins} mins (${found.distanceKm} km)`;
+            if (activeLabel) activeLabel.innerText = `Route locked to ${found.name}`;
+            if (navBtn) navBtn.disabled = false;
+
+            showToast(`Target hospital set: ${found.name}`);
+        }
+
+        function routeToHospital(id) {
+            selectHospitalById(id);
+        }
+
+        function startNavigation() {
+            if (selectedHospital) {
+                showToast(`Opening turn-by-turn navigation route to ${selectedHospital.name}...`);
+            }
+        }
+
+        function handleAmbulanceRequest(e) {
+            e.preventDefault();
+            const statusPanel = document.getElementById('ambulance-status-panel');
+            if (statusPanel) {
+                statusPanel.classList.remove('hidden');
+                showToast("Ambulance request received! Unit LAS-902 dispatched.");
+            }
+        }
+
+        function runTriageCheck() {
+            const symptom = document.getElementById('triage-symptom')?.value;
+            const resBox = document.getElementById('triage-result-box');
+            if (!resBox) return;
+
+            resBox.classList.remove('hidden');
+
+            if (symptom === 'chest_pain' || symptom === 'bleeding') {
+                resBox.className = "mt-4 p-4 rounded-xl border bg-red-50 border-red-200 text-red-900";
+                resBox.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <i class="fa-solid fa-triangle-exclamation text-xl text-red-600 mt-0.5"></i>
+                        <div>
+                            <h4 class="font-bold text-sm">HIGH PRIORITY EMERGENCY</h4>
+                            <p class="text-xs mt-1">Requires immediate emergency transport or Level 1 Trauma ER attention.</p>
+                            <button onclick="showSection('ambulance')" class="mt-3 bg-red-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg">Dispatch Ambulance Now</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resBox.className = "mt-4 p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-900";
+                resBox.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <i class="fa-solid fa-circle-check text-xl text-emerald-600 mt-0.5"></i>
+                        <div>
+                            <h4 class="font-bold text-sm">MODERATE / URGENT CARE STATUS</h4>
+                            <p class="text-xs mt-1">Facility visit is advised. Proceeding to nearest ER or Urgent Care clinic.</p>
+                            <button onclick="showSection('search')" class="mt-3 bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg">View Nearest Facilities</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         function showFirstAidModal(title, text) {
-            alert(`${title}\n\n${text}`);
+            showToast(`${title}: ${text.split('\n')[0]}`);
         }
     </script>
 </body>
