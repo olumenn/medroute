@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedRoute - Emergency Care & Nearest Hospital Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        emergency: {
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                        },
+                        medical: {
+                            500: '#0d9488',
+                            600: '#0d9488',
+                        }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Pulse wave animation for SOS button */
+        .sos-glow {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: sosPulse 1.8s infinite;
+        }
+        @keyframes sosPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        .map-grid-bg {
+            background-color: #e5e7eb;
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 antialiased flex flex-col font-sans">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('search')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-teal-400 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        <i class="fa-solid font-bold fa-heart-pulse"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-tight">Med<span class="text-teal-400">Route</span> <span class="text-xs font-semibold text-emerald-400">NG</span></span>
+                        <span class="hidden sm:inline-block text-xs bg-slate-800 text-teal-300 px-2 py-0.5 rounded-full ml-2 border border-slate-700">Nigeria Emergency Network</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex space-x-6 text-sm font-medium">
+                    <button onclick="showSection('search')" class="hover:text-teal-400 transition">Find Hospitals</button>
+                    <button onclick="showSection('triage')" class="hover:text-teal-400 transition">Symptom Triage</button>
+                    <button onclick="showSection('ambulance')" class="hover:text-teal-400 transition">Dispatch Ambulance (LASEMA/Private)</button>
+                    <button onclick="showSection('firstaid')" class="hover:text-teal-400 transition">First Aid Guides</button>
+                </nav>
+
+                <!-- Quick Action SOS & Contact -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="triggerSOSModal()" class="sos-glow bg-emergency-600 hover:bg-emergency-700 text-white font-bold px-4 py-2 rounded-xl flex items-center space-x-2 text-sm shadow-md transition active:scale-95">
+                        <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+                        <span>EMERGENCY SOS (112)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Live Location Banner -->
+        <div id="location-status-bar" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+            <div class="flex items-center space-x-3 text-brand-900">
+                <div class="p-2 bg-brand-100 rounded-lg text-brand-600">
+                    <i class="fa-solid fa-location-crosshairs text-lg animate-spin" id="loc-spinner" style="animation-duration: 3s;"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold uppercase text-brand-600 tracking-wider">Your Current Location</span>
+                    <p class="font-bold text-slate-800" id="user-location-text">Detecting GPS location...</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 w-full sm:w-auto">
+                <button onclick="detectLocation()" class="w-full sm:w-auto bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 transition flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Refresh GPS</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Dynamic Content Views -->
+        
+        <section id="view-search" class="space-y-6">
+            <!-- Search & Filter Controls -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div class="md:col-span-5 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                        <input type="text" id="hospital-search" placeholder="Search hospital name, specialty, or area (e.g. Ikeja, VI, Yaba)..." onkeyup="filterHospitals()" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                    </div>
+                    <div class="md:col-span-3">
+                        <select id="filter-specialty" onchange="filterHospitals()" class="w-full py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+                            <option value="all">All Facilities & Specialties</option>
+                            <option value="trauma">Trauma & ER (24/7)</option>
+                            <option value="cardio">Cardiology / Heart Center</option>
+                            <option value="pediatrics">Pediatrics & Neonatal Care</option>
+                            <option value="maternity">Maternity & Obstetrics</option>
+                            <option value="dialysis">Renal & Dialysis Unit</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <select id="filter-distance" onchange="filterHospitals()" class="w-full py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+                            <option value="15">Within 15 Km</option>
+                            <option value="5">Within 5 Km</option>
+                            <option value="10">Within 10 Km</option>
+                            <option value="30">Within 30 Km</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2 flex items-center">
+                        <label class="inline-flex items-center cursor-pointer space-x-2">
+                            <input type="checkbox" id="filter-icu" onchange="filterHospitals()" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600 relative"></div>
+                            <span class="text-xs font-semibold text-slate-700">ICU Bed Free</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map and List Split Interface -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Hospital Cards Feed -->
+                <div class="lg:col-span-7 space-y-4" id="hospital-list-container">
+                    <!-- Dynamic Hospital Cards Populated via JS -->
+                </div>
+
+                <!-- Simulated Interactive Route Map Panel -->
+                <div class="lg:col-span-5 bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col h-[650px] sticky top-20">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
+                            <h3 class="font-bold text-slate-800 text-sm">Real-Time Route & Traffic Radar</h3>
+                        </div>
+                        <span class="text-xs text-slate-500" id="active-route-label">Select hospital for route</span>
+                    </div>
+
+                    <!-- Map Graphic Display Simulation -->
+                    <div class="flex-1 map-grid-bg rounded-xl relative overflow-hidden border border-slate-200 flex items-center justify-center">
+                        <!-- Compass Rose -->
+                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur rounded-lg p-2 shadow-sm border border-slate-200 text-xs font-bold text-slate-600">
+                            <i class="fa-solid fa-compass text-brand-600 text-base"></i> N
+                        </div>
+
+                        <!-- Traffic status overlay -->
+                        <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur rounded-lg p-2.5 shadow-sm border border-slate-200 text-xs space-y-1">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                <span class="text-slate-600">3rd Mainland Bridge Traffic: Normal</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                                <span class="text-slate-600">Ikorodu Rd / Fadeyi: Moderate</span>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Visual Pins & Route Line -->
+                        <div id="map-canvas" class="w-full h-full relative">
+                            <!-- User Location Marker -->
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20">
+                                <div class="w-8 h-8 bg-brand-600 text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-brand-100 animate-pulse">
+                                    <i class="fa-solid fa-user text-xs"></i>
+                                </div>
+                                <span class="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded-full mt-1 font-bold shadow">YOU (Lagos)</span>
+                            </div>
+
+                            <!-- Simulated Pins -->
+                            <div class="absolute top-1/4 left-1/4 flex flex-col items-center cursor-pointer group" onclick="selectHospitalById(1)">
+                                <div class="w-7 h-7 bg-emergency-600 text-white rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-hospital text-xs"></i>
+                                </div>
+                                <span class="text-[10px] bg-white text-slate-800 font-bold px-1.5 py-0.5 rounded shadow border border-slate-200">LUTH Idi-Araba (5.1 km)</span>
+                            </div>
+
+                            <div class="absolute bottom-1/4 right-1/4 flex flex-col items-center cursor-pointer group" onclick="selectHospitalById(2)">
+                                <div class="w-7 h-7 bg-emergency-600 text-white rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-hospital text-xs"></i>
+                                </div>
+                                <span class="text-[10px] bg-white text-slate-800 font-bold px-1.5 py-0.5 rounded shadow border border-slate-200">Reddington VI (7.2 km)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Target Hospital Route Details -->
+                    <div id="map-target-card" class="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500">Destination Facility:</p>
+                            <h4 class="font-bold text-slate-800 text-sm" id="map-target-name">Select a Hospital Below</h4>
+                            <p class="text-xs text-brand-600 font-medium" id="map-target-eta">Estimated Arrival: -- mins</p>
+                        </div>
+                        <button id="map-navigate-btn" disabled onclick="startNavigation()" class="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center space-x-1">
+                            <i class="fa-solid fa-diamond-turn-right"></i>
+                            <span>Start Route</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-ambulance" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 max-w-4xl mx-auto">
+                <div class="flex items-center space-x-3 mb-6">
+                    <div class="w-12 h-12 bg-emergency-100 text-emergency-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+                        <i class="fa-solid fa-truck-medical"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Request Emergency Medical Transport</h2>
+                        <p class="text-slate-500 text-xs">Direct integration with LASEMA / LASAMBUS and verified private ambulance services across Nigeria.</p>
+                    </div>
+                </div>
+
+                <form onsubmit="handleAmbulanceRequest(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Patient Full Name</label>
+                            <input type="text" required placeholder="e.g., Babatunde Adeleke" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Emergency Phone Number</label>
+                            <input type="tel" required placeholder="0803 000 0000" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pickup Address / Landmark</label>
+                        <textarea rows="2" required placeholder="Enter area, street, or prominent landmark (e.g., Near Ojuelegba Underbridge, Surulere)..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">Current GPS Coordinates in Lagos attached automatically</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Ambulance Service Provider</label>
+                            <select class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option>LASAMBUS (Lagos State Emergency Ambulance - Free Hotline)</option>
+                                <option>Private ALS Unit (Advanced Life Support - Mobile ICU)</option>
+                                <option>Private BLS Unit (Basic Life Support / Oxygen Unit)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Destination Hospital</label>
+                            <select id="ambulance-dest-hospital" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="auto">Auto-Select Nearest Emergency Hospital</option>
+                                <option>Lagos University Teaching Hospital (LUTH), Idi-Araba</option>
+                                <option>Reddington Hospital, Victoria Island</option>
+                                <option>St. Nicholas Hospital, Lagos Island</option>
+                                <option>LASUTH Emergency Center, Ikeja</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-emergency-600 hover:bg-emergency-700 text-white font-extrabold py-4 rounded-xl transition text-base shadow-lg flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>DISPATCH AMBULANCE NOW</span>
+                    </button>
+                </form>
+
+                <!-- Ambulance Tracking Modal / Panel -->
+                <div id="ambulance-status-panel" class="hidden mt-6 bg-slate-900 text-white rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-3 h-3 bg-emerald-400 rounded-full animate-ping"></span>
+                            <span class="font-bold text-emerald-400 text-sm">Ambulance Unit #LAS-902 En Route</span>
+                        </div>
+                        <span class="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-300">ETA: 11 Minutes</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 text-center text-xs">
+                        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
+                            <span class="text-slate-400 block mb-1">Driver Name</span>
+                            <span class="font-bold text-white">Sunday Okafor</span>
+                        </div>
+                        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
+                            <span class="text-slate-400 block mb-1">Vehicle Reg</span>
+                            <span class="font-bold text-white">EKY-492-AA</span>
+                        </div>
+                        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
+                            <span class="text-slate-400 block mb-1">Paramedic Lead</span>
+                            <span class="font-bold text-white">Nurse Amina Bello</span>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button onclick="triggerCall('+234 807 059 1395')" class="flex-1 bg-brand-600 hover:bg-brand-700 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>Call Paramedic (+234)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    <!-- SOS Emergency Dialog Modal -->
+    <div id="sos-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 text-center space-y-5 shadow-2xl border border-red-100">
+            <div class="w-20 h-20 bg-emergency-100 text-emergency-600 rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce">
+                <i class="fa-solid fa-phone-flip"></i>
+            </div>
+            <div>
+                <h3 class="text-2xl font-black text-slate-900">Nigeria Emergency Response</h3>
+                <p class="text-slate-600 text-sm mt-1">Connecting to National Emergency Hotline (112) / LASEMA (767) and broadcasting your location to closest trauma centers.</p>
+            </div>
+
+            <div class="space-y-3">
+                <a href="tel:112" onclick="closeSOSModal()" class="w-full bg-emergency-600 hover:bg-emergency-700 text-white font-black py-4 rounded-2xl text-lg transition flex items-center justify-center space-x-3 shadow-lg">
+                    <i class="fa-solid fa-phone text-2xl"></i>
+                    <span>DIAL NATIONAL EMERGENCY (112 / 767)</span>
+                </a>
+                <button onclick="dispatchSOSNotification()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-2xl text-sm transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-tower-broadcast"></i>
+                    <span>Broadcast GPS to Nearby ER Hospitals</span>
+                </button>
+            </div>
+
+            <button onclick="closeSOSModal()" class="text-xs text-slate-400 hover:text-slate-600 font-semibold uppercase tracking-wider">Cancel / Stand Down</button>
+        </div>
+    </div>
+
+    <!-- Global Toast Notification Element -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3 transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none">
+        <div class="w-2.5 h-2.5 bg-teal-400 rounded-full animate-ping"></div>
+        <span id="toast-message" class="text-xs font-semibold">Notification message</span>
+    </div>
+
+    <script>
+        // Nigerian Sample Real Hospital Database
+        const hospitalDatabase = [
+            {
+                id: 1,
+                name: "Lagos University Teaching Hospital (LUTH)",
+                type: "Tertiary Teaching & Trauma Center",
+                distanceKm: 5.1,
+                etaMins: 16,
+                address: "Ishaga Rd, Idi-Araba, Surulere, Lagos",
+                phone: "+234 807 059 1395",
+                icuAvailable: true,
+                icuBedsCount: 9,
+                specialties: ["trauma", "cardio", "dialysis"],
+                waitMinutes: 18,
+                rating: 4.2,
+                image: "https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 2,
+                name: "Reddington Hospital",
+                type: "Specialist & 24/7 ER Center",
+                distanceKm: 7.2,
+                etaMins: 14,
+                address: "12 Idowu Martins St, Victoria Island, Lagos",
+                phone: "+234 916 535 9769",
+                icuAvailable: true,
+                icuBedsCount: 4,
+                specialties: ["cardio", "pediatrics"],
+                waitMinutes: 10,
+                rating: 4.6,
+                image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 3,
+                name: "St. Nicholas Hospital",
+                type: "Private Medical & Kidney Transplant Center",
+                distanceKm: 4.7,
+                etaMins: 12,
+                address: "57 Campbell St, Lagos Island, Lagos",
+                phone: "+234 201 280 0823",
+                icuAvailable: true,
+                icuBedsCount: 3,
+                specialties: ["dialysis", "trauma"],
+                waitMinutes: 15,
+                rating: 4.5,
+                image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: 4,
+                name: "Lagos State University Teaching Hospital (LASUTH)",
+                type: "State Level 1 Emergency Hospital",
+                distanceKm: 12.3,
+                etaMins: 28,
+                address: " Oba Akinjobi Way, GRA, Ikeja, Lagos",
+                phone: "+234 808 557 7243",
+                icuAvailable: true,
+                icuBedsCount: 12,
+                specialties: ["trauma", "maternity", "pediatrics"],
+                waitMinutes: 22,
+                rating: 4.3,
+                image: "https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+
+        let selectedHospital = null;
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderHospitals(hospitalDatabase);
+            detectLocation();
+        });
+
+        // Navigation Handler
+        function showSection(sectionId) {
+            const sections = ['search', 'triage', 'ambulance', 'firstaid'];
+            sections.forEach(id => {
+                const el = document.getElementById(`view-${id}`);
+                if (el) {
+                    if (id === sectionId) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Hospital List Cards
+        function renderHospitals(list) {
+            const container = document.getElementById('hospital-list-container');
+            container.innerHTML = '';
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 text-center border border-slate-100 space-y-3">
+                        <i class="fa-solid fa-hospital-user text-4xl text-slate-300"></i>
+                        <h4 class="font-bold text-slate-700">No medical facilities matching your criteria</h4>
+                        <p class="text-xs text-slate-500">Try adjusting distance slider or clearing search terms.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.forEach(hosp => {
+                const isSelected = selectedHospital && selectedHospital.id === hosp.id;
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-2xl p-5 shadow-sm border ${isSelected ? 'border-brand-500 ring-2 ring-brand-100' : 'border-slate-100'} hover:border-slate-300 transition duration-200 cursor-pointer flex flex-col sm:flex-row gap-4`;
+                card.onclick = () => selectHospitalById(hosp.id);
+
+                card.innerHTML = `
+                    <img src="${hosp.image}" alt="${hosp.name}" class="w-full sm:w-36 h-32 object-cover rounded-xl flex-shrink-0">
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">${hosp.type}</span>
+                                    <h3 class="font-bold text-slate-900 text-base mt-1">${hosp.name}</h3>
+                                </div>
+                                <span class="bg-emerald-50 text-emerald-700 font-extrabold text-xs px-2.5 py-1 rounded-lg border border-emerald-200">${hosp.etaMins} mins ETA</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${hosp.address} (${hosp.distanceKm} km away)</p>
+                        </div>
+
+                        <div class="flex items-center space-x-3 mt-3 pt-3 border-t border-slate-100 text-xs">
+                            <span class="${hosp.icuAvailable ? 'text-teal-700 font-semibold' : 'text-slate-400'} flex items-center">
+                                <i class="fa-solid fa-bed mr-1"></i> ${hosp.icuAvailable ? `${hosp.icuBedsCount} ICU Beds Free` : 'No ICU Beds'}
+                            </span>
+                            <span class="text-slate-400">|</span>
+                            <span class="text-slate-600 font-medium">
+                                <i class="fa-solid fa-clock text-amber-500 mr-1"></i> ER Queue ~${hosp.waitMinutes}m
+                            </span>
+                        </div>
+
+                        <div class="flex items-center space-x-2 mt-4">
+                            <button onclick="event.stopPropagation(); triggerCall('${hosp.phone}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center space-x-1">
+                                <i class="fa-solid fa-phone text-brand-600"></i>
+                                <span>Call ER Hotline</span>
+                            </button>
+                            <button onclick="event.stopPropagation(); routeToHospital(${hosp.id})" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2 rounded-lg transition flex items-center justify-center space-x-1">
+                                <i class="fa-solid fa-route"></i>
+                                <span>Navigate</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Location Detection Simulation (Nigerian Metropolitan Focus)
+        function detectLocation() {
+            const locText = document.getElementById('user-location-text');
+            locText.innerText = "Locating GPS in Nigeria...";
+            
+            setTimeout(() => {
+                locText.innerText = "Yaba / Surulere District, Lagos State, Nigeria (6.5244° N, 3.3792° E)";
+                showToast("GPS Location Updated for Lagos State");
+            }, 1200);
+        }
+
+        // Direct Call Simulation
+        function triggerCall(phoneNumber) {
+            showToast(`Initiating emergency dialer call to: ${phoneNumber}`);
+        }
+
+        // Generic Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            
+            if (toast && toastMsg) {
+                toastMsg.innerText = message;
+                toast.classList.remove('translate-y-24', 'opacity-0');
+                
+                setTimeout(() => {
+                    toast.classList.add('translate-y-24', 'opacity-0');
+                }, 3000);
+            }
+        }
+
+        // First Aid Modal Helper
+        function showFirstAidModal(title, text) {
+            alert(`${title}\n\n${text}`);
+        }
+    </script>
+</body>
+</html>
