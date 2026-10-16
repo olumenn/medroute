@@ -2,8 +2,8 @@
 <html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedRoute - Emergency Care & Nearest Hospital Finder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MedRoute NG - Emergency Hospital Finder & Care Network</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,91 +49,111 @@
             animation: sosPulse 1.8s infinite;
         }
         @keyframes sosPulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
         .map-grid-bg {
             background-color: #e5e7eb;
             background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-            background-size: 24px 24px;
+            background-size: 20px 20px;
         }
+        /* Mobile smooth scrolling & tap highlight prevention */
+        html { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="h-full text-slate-800 antialiased flex flex-col font-sans">
+<body class="h-full text-slate-800 antialiased flex flex-col font-sans bg-slate-50">
 
     <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Brand Logo -->
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('search')">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-teal-400 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                        <i class="fa-solid font-bold fa-heart-pulse"></i>
+                <div class="flex items-center space-x-2 sm:space-x-3 cursor-pointer" onclick="showSection('search')">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-teal-400 flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg flex-shrink-0">
+                        <i class="fa-solid fa-heart-pulse"></i>
                     </div>
-                    <div>
-                        <span class="text-xl font-extrabold tracking-tight">Med<span class="text-teal-400">Route</span> <span class="text-xs font-semibold text-emerald-400">NG</span></span>
-                        <span class="hidden sm:inline-block text-xs bg-slate-800 text-teal-300 px-2 py-0.5 rounded-full ml-2 border border-slate-700">Nigeria Emergency Network</span>
+                    <div class="leading-tight">
+                        <span class="text-lg sm:text-xl font-extrabold tracking-tight">Med<span class="text-teal-400">Route</span> <span class="text-xs font-semibold text-emerald-400">NG</span></span>
+                        <span class="hidden md:inline-block text-[10px] bg-slate-800 text-teal-300 px-2 py-0.5 rounded-full ml-2 border border-slate-700">Nigeria Emergency Network</span>
                     </div>
                 </div>
 
-                <!-- Navigation Links -->
-                <nav class="hidden md:flex space-x-6 text-sm font-medium">
-                    <button onclick="showSection('search')" class="hover:text-teal-400 transition">Find Hospitals</button>
-                    <button onclick="showSection('triage')" class="hover:text-teal-400 transition">Symptom Triage</button>
-                    <button onclick="showSection('ambulance')" class="hover:text-teal-400 transition">Dispatch Ambulance (LASEMA/Private)</button>
-                    <button onclick="showSection('firstaid')" class="hover:text-teal-400 transition">First Aid Guides</button>
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden lg:flex space-x-6 text-sm font-medium">
+                    <button onclick="showSection('search')" class="hover:text-teal-400 transition py-2">Find Hospitals</button>
+                    <button onclick="showSection('triage')" class="hover:text-teal-400 transition py-2">Symptom Triage</button>
+                    <button onclick="showSection('ambulance')" class="hover:text-teal-400 transition py-2">Dispatch Ambulance</button>
+                    <button onclick="showSection('firstaid')" class="hover:text-teal-400 transition py-2">First Aid Guides</button>
                 </nav>
 
-                <!-- Quick Action SOS & Contact -->
-                <div class="flex items-center space-x-3">
-                    <button onclick="triggerSOSModal()" class="sos-glow bg-emergency-600 hover:bg-emergency-700 text-white font-bold px-4 py-2 rounded-xl flex items-center space-x-2 text-sm shadow-md transition active:scale-95">
+                <!-- Quick Action SOS & Mobile Menu Button -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button onclick="triggerSOSModal()" class="sos-glow bg-emergency-600 hover:bg-emergency-700 text-white font-bold px-3 py-2 sm:px-4 sm:py-2 rounded-xl flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm shadow-md transition active:scale-95">
                         <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
-                        <span>EMERGENCY SOS (112)</span>
+                        <span class="hidden xs:inline">EMERGENCY SOS</span>
+                        <span class="xs:hidden">SOS</span>
+                        <span class="hidden sm:inline">(112)</span>
+                    </button>
+
+                    <!-- Mobile Menu Hamburger Button -->
+                    <button onclick="toggleMobileMenu()" id="mobile-menu-btn" aria-label="Toggle navigation menu" class="lg:hidden p-2 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 focus:outline-none border border-slate-700">
+                        <i class="fa-solid fa-bars text-lg" id="mobile-menu-icon"></i>
                     </button>
                 </div>
             </div>
         </div>
+
+        <div id="mobile-menu" class="hidden lg:hidden bg-slate-900 border-t border-slate-800 px-4 pt-3 pb-4 space-y-2 shadow-2xl transition-all">
+            <button onclick="showSection('search'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-xl text-slate-200 hover:bg-slate-800 font-medium text-sm flex items-center space-x-3">
+                <i class="fa-solid fa-hospital text-teal-400 w-5"></i>
+                <span>Find Hospitals & Emergency Rooms</span>
+            </button>
+            <button onclick="showSection('triage'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-xl text-slate-200 hover:bg-slate-800 font-medium text-sm flex items-center space-x-3">
+                <i class="fa-solid fa-user-doctor text-brand-400 w-5"></i>
+                <span>Symptom Triage Assessment</span>
+            </button>
+            <button onclick="showSection('ambulance'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-xl text-slate-200 hover:bg-slate-800 font-medium text-sm flex items-center space-x-3">
+                <i class="fa-solid fa-truck-medical text-amber-400 w-5"></i>
+                <span>Dispatch Ambulance (LASEMA/Private)</span>
+            </button>
+            <button onclick="showSection('firstaid'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-xl text-slate-200 hover:bg-slate-800 font-medium text-sm flex items-center space-x-3">
+                <i class="fa-solid fa-kit-medical text-emerald-400 w-5"></i>
+                <span>First Aid Emergency Guides</span>
+            </button>
+        </div>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
 
-        <div id="location-status-bar" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-            <div class="flex items-center space-x-3 text-brand-900">
-                <div class="p-2 bg-brand-100 rounded-lg text-brand-600">
-                    <i class="fa-solid fa-location-crosshairs text-lg animate-spin" id="loc-spinner" style="animation-duration: 3s;"></i>
+        <div id="location-status-bar" class="bg-blue-50 border border-blue-200 rounded-2xl p-3.5 sm:p-4 mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+            <div class="flex items-center space-x-3 text-brand-900 w-full sm:w-auto">
+                <div class="p-2 bg-brand-100 rounded-lg text-brand-600 flex-shrink-0">
+                    <i class="fa-solid fa-location-crosshairs text-base sm:text-lg animate-spin" id="loc-spinner" style="animation-duration: 3s;"></i>
                 </div>
-                <div>
-                    <span class="text-xs font-semibold uppercase text-brand-600 tracking-wider">Your Current Location</span>
-                    <p class="font-bold text-slate-800" id="user-location-text">Detecting GPS location...</p>
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] sm:text-xs font-semibold uppercase text-brand-600 tracking-wider block">Your Current Location</span>
+                    <p class="font-bold text-slate-800 text-xs sm:text-sm truncate" id="user-location-text">Detecting GPS location...</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2 w-full sm:w-auto">
-                <button onclick="detectLocation()" class="w-full sm:w-auto bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-50 transition flex items-center justify-center space-x-1">
-                    <i class="fa-solid fa-rotate"></i>
-                    <span>Refresh GPS</span>
-                </button>
-            </div>
+            <button onclick="detectLocation()" class="w-full sm:w-auto bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-lg text-xs font-semibold hover:bg-slate-50 transition flex items-center justify-center space-x-1.5 active:scale-95">
+                <i class="fa-solid fa-rotate"></i>
+                <span>Refresh GPS</span>
+            </button>
         </div>
 
         <!-- Dynamic Content Views -->
         
-        <section id="view-search" class="space-y-6">
+        <section id="view-search" class="space-y-4 sm:space-y-6">
             <!-- Search & Filter Controls -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div class="md:col-span-5 relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                        <input type="text" id="hospital-search" placeholder="Search hospital name, specialty, or area (e.g. Ikeja, VI, Yaba)..." onkeyup="filterHospitals()" class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4">
+                    <div class="sm:col-span-2 lg:col-span-5 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <input type="text" id="hospital-search" placeholder="Search facility name, specialty, or area (e.g. Ikeja, VI, Yaba)..." onkeyup="filterHospitals()" class="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
                     </div>
-                    <div class="md:col-span-3">
-                        <select id="filter-specialty" onchange="filterHospitals()" class="w-full py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
-                            <option value="all">All Facilities & Specialties</option>
+                    <div class="lg:col-span-3">
+                        <select id="filter-specialty" onchange="filterHospitals()" class="w-full py-2.5 sm:py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+                            <option value="all">All Specialties & ER Facilities</option>
                             <option value="trauma">Trauma & ER (24/7)</option>
                             <option value="cardio">Cardiology / Heart Center</option>
                             <option value="pediatrics">Pediatrics & Neonatal Care</option>
@@ -141,18 +161,18 @@
                             <option value="dialysis">Renal & Dialysis Unit</option>
                         </select>
                     </div>
-                    <div class="md:col-span-2">
-                        <select id="filter-distance" onchange="filterHospitals()" class="w-full py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+                    <div class="lg:col-span-2">
+                        <select id="filter-distance" onchange="filterHospitals()" class="w-full py-2.5 sm:py-3 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
                             <option value="15">Within 15 Km</option>
                             <option value="5">Within 5 Km</option>
                             <option value="10">Within 10 Km</option>
                             <option value="30">Within 30 Km</option>
                         </select>
                     </div>
-                    <div class="md:col-span-2 flex items-center">
+                    <div class="lg:col-span-2 flex items-center pt-1 sm:pt-0">
                         <label class="inline-flex items-center cursor-pointer space-x-2">
                             <input type="checkbox" id="filter-icu" onchange="filterHospitals()" class="sr-only peer">
-                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600 relative"></div>
+                            <div class="w-10 h-5 sm:w-11 sm:h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-teal-600 relative"></div>
                             <span class="text-xs font-semibold text-slate-700">ICU Bed Free</span>
                         </label>
                     </div>
@@ -167,32 +187,31 @@
                     <!-- Dynamic Hospital Cards Populated via JS -->
                 </div>
 
-                <!-- Simulated Interactive Route Map Panel -->
-                <div class="lg:col-span-5 bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col h-[650px] sticky top-20">
-                    <div class="flex items-center justify-between mb-3">
+                <div class="lg:col-span-5 bg-white rounded-2xl p-3.5 sm:p-4 shadow-sm border border-slate-100 flex flex-col h-[400px] sm:h-[500px] lg:h-[650px] lg:sticky lg:top-20">
+                    <div class="flex items-center justify-between mb-2 sm:mb-3">
                         <div class="flex items-center space-x-2">
-                            <span class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
-                            <h3 class="font-bold text-slate-800 text-sm">Real-Time Route & Traffic Radar</h3>
+                            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+                            <h3 class="font-bold text-slate-800 text-xs sm:text-sm">Real-Time Route Radar</h3>
                         </div>
-                        <span class="text-xs text-slate-500" id="active-route-label">Select hospital for route</span>
+                        <span class="text-[10px] sm:text-xs text-slate-500 truncate max-w-[150px]" id="active-route-label">Select hospital for route</span>
                     </div>
 
                     <!-- Map Graphic Display Simulation -->
                     <div class="flex-1 map-grid-bg rounded-xl relative overflow-hidden border border-slate-200 flex items-center justify-center">
                         <!-- Compass Rose -->
-                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur rounded-lg p-2 shadow-sm border border-slate-200 text-xs font-bold text-slate-600">
-                            <i class="fa-solid fa-compass text-brand-600 text-base"></i> N
+                        <div class="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur rounded-lg p-1.5 shadow-sm border border-slate-200 text-[10px] font-bold text-slate-600 z-10">
+                            <i class="fa-solid fa-compass text-brand-600 text-sm"></i> N
                         </div>
 
                         <!-- Traffic status overlay -->
-                        <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur rounded-lg p-2.5 shadow-sm border border-slate-200 text-xs space-y-1">
-                            <div class="flex items-center space-x-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                                <span class="text-slate-600">3rd Mainland Bridge Traffic: Normal</span>
+                        <div class="absolute bottom-2.5 left-2.5 bg-white/95 backdrop-blur rounded-lg p-2 shadow-sm border border-slate-200 text-[10px] space-y-1 z-10 max-w-[200px] sm:max-w-none">
+                            <div class="flex items-center space-x-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                                <span class="text-slate-600 truncate">3rd Mainland Bridge Traffic: Normal</span>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                                <span class="text-slate-600">Ikorodu Rd / Fadeyi: Moderate</span>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
+                                <span class="text-slate-600 truncate">Fadeyi / Ikorodu Rd: Moderate</span>
                             </div>
                         </div>
 
@@ -200,37 +219,37 @@
                         <div id="map-canvas" class="w-full h-full relative">
                             <!-- User Location Marker -->
                             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20">
-                                <div class="w-8 h-8 bg-brand-600 text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-brand-100 animate-pulse">
-                                    <i class="fa-solid fa-user text-xs"></i>
+                                <div class="w-7 h-7 sm:w-8 sm:h-8 bg-brand-600 text-white rounded-full flex items-center justify-center shadow-lg ring-4 ring-brand-100 animate-pulse">
+                                    <i class="fa-solid fa-user text-[10px] sm:text-xs"></i>
                                 </div>
-                                <span class="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded-full mt-1 font-bold shadow">YOU (Lagos)</span>
+                                <span class="text-[9px] sm:text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded-full mt-1 font-bold shadow">YOU (Lagos)</span>
                             </div>
 
                             <!-- Simulated Pins -->
-                            <div class="absolute top-1/4 left-1/4 flex flex-col items-center cursor-pointer group" onclick="selectHospitalById(1)">
-                                <div class="w-7 h-7 bg-emergency-600 text-white rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition">
-                                    <i class="fa-solid fa-hospital text-xs"></i>
+                            <div class="absolute top-1/4 left-1/4 flex flex-col items-center cursor-pointer group z-10" onclick="selectHospitalById(1)">
+                                <div class="w-6 h-6 sm:w-7 sm:h-7 bg-emergency-600 text-white rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-hospital text-[10px] sm:text-xs"></i>
                                 </div>
-                                <span class="text-[10px] bg-white text-slate-800 font-bold px-1.5 py-0.5 rounded shadow border border-slate-200">LUTH Idi-Araba (5.1 km)</span>
+                                <span class="text-[9px] sm:text-[10px] bg-white text-slate-800 font-bold px-1.5 py-0.5 rounded shadow border border-slate-200">LUTH (5.1 km)</span>
                             </div>
 
-                            <div class="absolute bottom-1/4 right-1/4 flex flex-col items-center cursor-pointer group" onclick="selectHospitalById(2)">
-                                <div class="w-7 h-7 bg-emergency-600 text-white rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition">
-                                    <i class="fa-solid fa-hospital text-xs"></i>
+                            <div class="absolute bottom-1/4 right-1/4 flex flex-col items-center cursor-pointer group z-10" onclick="selectHospitalById(2)">
+                                <div class="w-6 h-6 sm:w-7 sm:h-7 bg-emergency-600 text-white rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-hospital text-[10px] sm:text-xs"></i>
                                 </div>
-                                <span class="text-[10px] bg-white text-slate-800 font-bold px-1.5 py-0.5 rounded shadow border border-slate-200">Reddington VI (7.2 km)</span>
+                                <span class="text-[9px] sm:text-[10px] bg-white text-slate-800 font-bold px-1.5 py-0.5 rounded shadow border border-slate-200">Reddington (7.2 km)</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Selected Target Hospital Route Details -->
-                    <div id="map-target-card" class="mt-3 bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-500">Destination Facility:</p>
-                            <h4 class="font-bold text-slate-800 text-sm" id="map-target-name">Select a Hospital Below</h4>
-                            <p class="text-xs text-brand-600 font-medium" id="map-target-eta">Estimated Arrival: -- mins</p>
+                    <div id="map-target-card" class="mt-2.5 sm:mt-3 bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[10px] font-semibold text-slate-500 uppercase">Destination:</p>
+                            <h4 class="font-bold text-slate-800 text-xs sm:text-sm truncate" id="map-target-name">Select a Hospital Below</h4>
+                            <p class="text-[11px] text-brand-600 font-medium" id="map-target-eta">Estimated Arrival: -- mins</p>
                         </div>
-                        <button id="map-navigate-btn" disabled onclick="startNavigation()" class="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center space-x-1">
+                        <button id="map-navigate-btn" disabled onclick="startNavigation()" class="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-bold px-3 py-2 sm:px-4 sm:py-2 rounded-lg transition flex items-center space-x-1 flex-shrink-0 active:scale-95">
                             <i class="fa-solid fa-diamond-turn-right"></i>
                             <span>Start Route</span>
                         </button>
@@ -240,21 +259,21 @@
         </section>
 
         <section id="view-triage" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 max-w-3xl mx-auto">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-12 h-12 bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 max-w-3xl mx-auto">
+                <div class="flex items-center space-x-3 mb-4 sm:mb-6">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center font-bold text-lg sm:text-xl flex-shrink-0">
                         <i class="fa-solid fa-user-doctor"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-slate-900">Emergency Symptom Triage</h2>
-                        <p class="text-slate-500 text-xs">Answer a few rapid questions to gauge urgency and find appropriate trauma or urgent care centers.</p>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-900">Emergency Symptom Triage</h2>
+                        <p class="text-slate-500 text-xs">Answer rapid questions to gauge urgency and find trauma centers.</p>
                     </div>
                 </div>
 
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Primary Symptom / Condition</label>
-                        <select id="triage-symptom" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <select id="triage-symptom" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                             <option value="chest_pain">Severe Chest Pain / Difficulty Breathing</option>
                             <option value="bleeding">Severe Uncontrolled Bleeding / Trauma</option>
                             <option value="fever">High Fever / Convulsion / Unresponsive</option>
@@ -264,9 +283,9 @@
                         </select>
                     </div>
 
-                    <button onclick="runTriageCheck()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl transition text-sm flex items-center justify-center space-x-2 shadow-md">
+                    <button onclick="runTriageCheck()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl transition text-xs sm:text-sm flex items-center justify-center space-x-2 shadow-md active:scale-98">
                         <i class="fa-solid fa-stethoscope"></i>
-                        <span>Assess Triage Level</span>
+                        <span>Assess Urgency Level</span>
                     </button>
 
                     <div id="triage-result-box" class="hidden mt-4 p-4 rounded-xl border"></div>
@@ -275,45 +294,45 @@
         </section>
 
         <section id="view-firstaid" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 max-w-4xl mx-auto space-y-4">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 max-w-4xl mx-auto space-y-4">
                 <div class="flex items-center space-x-3 mb-2">
-                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center font-bold text-lg sm:text-xl flex-shrink-0">
                         <i class="fa-solid fa-kit-medical"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-slate-900">Emergency First Aid Instructions</h2>
-                        <p class="text-slate-500 text-xs">Immediate life-saving procedures while emergency dispatch or transport is on the way.</p>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-900">Emergency First Aid Instructions</h2>
+                        <p class="text-slate-500 text-xs">Immediate procedures while emergency transport is on the way.</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer" onclick="showFirstAidModal('CPR Protocol (Adults)', '1. Place hands on center of chest.\n2. Push hard and fast at 100-120 bpm.\n3. Continue until paramedics arrive.')">
-                        <div class="flex items-center space-x-3 text-brand-600 font-bold mb-2">
-                            <i class="fa-solid fa-heart-pulse text-lg"></i>
-                            <span>Cardiopulmonary Resuscitation (CPR)</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer active:bg-slate-50" onclick="showFirstAidModal('CPR Protocol', '1. Place hands on center of chest.\n2. Push hard and fast at 100-120 bpm.\n3. Continue until paramedics arrive.')">
+                        <div class="flex items-center space-x-2.5 text-brand-600 font-bold mb-1.5 text-sm">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                            <span>CPR (Adult Resuscitation)</span>
                         </div>
                         <p class="text-xs text-slate-600">Chest compression technique for non-responsive patients with no pulse.</p>
                     </div>
 
-                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer" onclick="showFirstAidModal('Bleeding Control', '1. Apply firm direct pressure with clean cloth.\n2. Elevate injured limb if possible.\n3. Do NOT remove soaked cloth; add more on top.')">
-                        <div class="flex items-center space-x-3 text-emergency-600 font-bold mb-2">
-                            <i class="fa-solid fa-droplet text-lg"></i>
+                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer active:bg-slate-50" onclick="showFirstAidModal('Bleeding Control', '1. Apply firm direct pressure with clean cloth.\n2. Elevate injured limb if possible.\n3. Do NOT remove soaked cloth.')">
+                        <div class="flex items-center space-x-2.5 text-emergency-600 font-bold mb-1.5 text-sm">
+                            <i class="fa-solid fa-droplet"></i>
                             <span>Severe Bleeding & Hemorrhage</span>
                         </div>
                         <p class="text-xs text-slate-600">Direct pressure technique and tourniquet application for arterial bleeding.</p>
                     </div>
 
-                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer" onclick="showFirstAidModal('Choking Response', '1. Stand behind person.\n2. Give 5 quick abdominal thrusts (Heimlich maneuver).\n3. Alternate with 5 back blows until clear.')">
-                        <div class="flex items-center space-x-3 text-amber-600 font-bold mb-2">
-                            <i class="fa-solid fa-lungs text-lg"></i>
+                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer active:bg-slate-50" onclick="showFirstAidModal('Choking Response', '1. Stand behind person.\n2. Give 5 abdominal thrusts.\n3. Alternate with 5 back blows.')">
+                        <div class="flex items-center space-x-2.5 text-amber-600 font-bold mb-1.5 text-sm">
+                            <i class="fa-solid fa-lungs"></i>
                             <span>Airway Obstruction (Choking)</span>
                         </div>
                         <p class="text-xs text-slate-600">Heimlich maneuver and back blows for obstructed airways in adults and kids.</p>
                     </div>
 
-                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer" onclick="showFirstAidModal('Burns Care', '1. Cool burn with cool running water for 10-20 mins.\n2. Do NOT apply ice, butter, or paste.\n3. Cover loosely with clean non-stick dressing.')">
-                        <div class="flex items-center space-x-3 text-orange-600 font-bold mb-2">
-                            <i class="fa-solid fa-fire-flame-curd text-lg"></i>
+                    <div class="border border-slate-200 rounded-xl p-4 hover:border-brand-500 transition cursor-pointer active:bg-slate-50" onclick="showFirstAidModal('Burns Care', '1. Cool burn with cool running water for 10-20 mins.\n2. Do NOT apply ice or oil.\n3. Cover loosely with clean cloth.')">
+                        <div class="flex items-center space-x-2.5 text-orange-600 font-bold mb-1.5 text-sm">
+                            <i class="fa-solid fa-fire-flame-curd"></i>
                             <span>Thermal & Chemical Burns</span>
                         </div>
                         <p class="text-xs text-slate-600">Immediate cooling measures and sterile covering procedures.</p>
@@ -323,46 +342,46 @@
         </section>
 
         <section id="view-ambulance" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 max-w-4xl mx-auto">
-                <div class="flex items-center space-x-3 mb-6">
-                    <div class="w-12 h-12 bg-emergency-100 text-emergency-600 rounded-2xl flex items-center justify-center font-bold text-xl">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-100 max-w-4xl mx-auto">
+                <div class="flex items-center space-x-3 mb-4 sm:mb-6">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emergency-100 text-emergency-600 rounded-2xl flex items-center justify-center font-bold text-lg sm:text-xl flex-shrink-0">
                         <i class="fa-solid fa-truck-medical"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-slate-900">Request Emergency Medical Transport</h2>
-                        <p class="text-slate-500 text-xs">Direct integration with LASEMA / LASAMBUS and verified private ambulance services across Nigeria.</p>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-900">Request Emergency Transport</h2>
+                        <p class="text-slate-500 text-xs">Direct integration with LASEMA / LASAMBUS and private ambulance providers.</p>
                     </div>
                 </div>
 
                 <form onsubmit="handleAmbulanceRequest(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Patient Full Name</label>
-                            <input type="text" required placeholder="e.g., Babatunde Adeleke" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <input type="text" required placeholder="e.g., Babatunde Adeleke" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Emergency Phone Number</label>
-                            <input type="tel" required placeholder="0803 000 0000" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <input type="tel" required placeholder="0803 000 0000" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pickup Address / Landmark</label>
-                        <textarea rows="2" required placeholder="Enter area, street, or prominent landmark (e.g., Near Ojuelegba Underbridge, Surulere)..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">Current GPS Coordinates in Lagos attached automatically</textarea>
+                        <textarea rows="2" required placeholder="Enter area, street, or prominent landmark..." class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">Current GPS Coordinates in Lagos attached automatically</textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Ambulance Service Provider</label>
-                            <select class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                                <option>LASAMBUS (Lagos State Emergency Ambulance - Free Hotline)</option>
+                            <select class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option>LASAMBUS (Lagos Emergency Ambulance - Free Hotline)</option>
                                 <option>Private ALS Unit (Advanced Life Support - Mobile ICU)</option>
-                                <option>Private BLS Unit (Basic Life Support / Oxygen Unit)</option>
+                                <option>Private BLS Unit (Basic Life Support / Oxygen)</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Destination Hospital</label>
-                            <select id="ambulance-dest-hospital" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <select id="ambulance-dest-hospital" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                                 <option value="auto">Auto-Select Nearest Emergency Hospital</option>
                                 <option>Lagos University Teaching Hospital (LUTH), Idi-Araba</option>
                                 <option>Reddington Hospital, Victoria Island</option>
@@ -372,76 +391,76 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-emergency-600 hover:bg-emergency-700 text-white font-extrabold py-4 rounded-xl transition text-base shadow-lg flex items-center justify-center space-x-2">
+                    <button type="submit" class="w-full bg-emergency-600 hover:bg-emergency-700 text-white font-extrabold py-3.5 sm:py-4 rounded-xl transition text-sm sm:text-base shadow-lg flex items-center justify-center space-x-2 active:scale-98">
                         <i class="fa-solid fa-paper-plane"></i>
                         <span>DISPATCH AMBULANCE NOW</span>
                     </button>
                 </form>
 
-                <!-- Ambulance Tracking Modal / Panel -->
-                <div id="ambulance-status-panel" class="hidden mt-6 bg-slate-900 text-white rounded-2xl p-6 space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                        <div class="flex items-center space-x-3">
+                <!-- Ambulance Status Panel -->
+                <div id="ambulance-status-panel" class="hidden mt-6 bg-slate-900 text-white rounded-2xl p-4 sm:p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
+                        <div class="flex items-center space-x-2">
                             <span class="w-3 h-3 bg-emerald-400 rounded-full animate-ping"></span>
-                            <span class="font-bold text-emerald-400 text-sm">Ambulance Unit #LAS-902 En Route</span>
+                            <span class="font-bold text-emerald-400 text-xs sm:text-sm">Ambulance Unit #LAS-902 En Route</span>
                         </div>
                         <span class="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-300">ETA: 11 Minutes</span>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-3 text-center text-xs">
-                        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
-                            <span class="text-slate-400 block mb-1">Driver Name</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-center text-xs">
+                        <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700">
+                            <span class="text-slate-400 block text-[10px] uppercase">Driver Name</span>
                             <span class="font-bold text-white">Sunday Okafor</span>
                         </div>
-                        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
-                            <span class="text-slate-400 block mb-1">Vehicle Reg</span>
+                        <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700">
+                            <span class="text-slate-400 block text-[10px] uppercase">Vehicle Reg</span>
                             <span class="font-bold text-white">EKY-492-AA</span>
                         </div>
-                        <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
-                            <span class="text-slate-400 block mb-1">Paramedic Lead</span>
+                        <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700">
+                            <span class="text-slate-400 block text-[10px] uppercase">Paramedic Lead</span>
                             <span class="font-bold text-white">Nurse Amina Bello</span>
                         </div>
                     </div>
 
-                    <div class="flex space-x-3">
-                        <button onclick="triggerCall('+234 807 059 1395')" class="flex-1 bg-brand-600 hover:bg-brand-700 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-phone"></i>
-                            <span>Call Paramedic (+234)</span>
-                        </button>
-                    </div>
+                    <button onclick="triggerCall('+234 807 059 1395')" class="w-full bg-brand-600 hover:bg-brand-700 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 active:scale-95">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>Call Paramedic (+234)</span>
+                    </button>
                 </div>
             </div>
         </section>
     </main>
 
+    <!-- Emergency SOS Modal -->
     <div id="sos-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 text-center space-y-5 shadow-2xl border border-red-100">
-            <div class="w-20 h-20 bg-emergency-100 text-emergency-600 rounded-full flex items-center justify-center mx-auto text-3xl animate-bounce">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 text-center space-y-4 sm:space-y-5 shadow-2xl border border-red-100">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-emergency-100 text-emergency-600 rounded-full flex items-center justify-center mx-auto text-2xl sm:text-3xl animate-bounce">
                 <i class="fa-solid fa-phone-flip"></i>
             </div>
             <div>
-                <h3 class="text-2xl font-black text-slate-900">Nigeria Emergency Response</h3>
-                <p class="text-slate-600 text-sm mt-1">Connecting to National Emergency Hotline (112) / LASEMA (767) and broadcasting your location to closest trauma centers.</p>
+                <h3 class="text-xl sm:text-2xl font-black text-slate-900">Nigeria Emergency Response</h3>
+                <p class="text-slate-600 text-xs sm:text-sm mt-1">Connecting to National Emergency Hotline (112) / LASEMA (767) and broadcasting GPS location.</p>
             </div>
 
-            <div class="space-y-3">
-                <a href="tel:112" onclick="closeSOSModal()" class="w-full bg-emergency-600 hover:bg-emergency-700 text-white font-black py-4 rounded-2xl text-lg transition flex items-center justify-center space-x-3 shadow-lg">
-                    <i class="fa-solid fa-phone text-2xl"></i>
-                    <span>DIAL NATIONAL EMERGENCY (112 / 767)</span>
+            <div class="space-y-2.5 sm:space-y-3">
+                <a href="tel:112" onclick="closeSOSModal()" class="w-full bg-emergency-600 hover:bg-emergency-700 text-white font-black py-3.5 sm:py-4 rounded-2xl text-base sm:text-lg transition flex items-center justify-center space-x-2 shadow-lg active:scale-98">
+                    <i class="fa-solid fa-phone text-lg sm:text-xl"></i>
+                    <span>DIAL EMERGENCY (112 / 767)</span>
                 </a>
-                <button onclick="dispatchSOSNotification()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-2xl text-sm transition flex items-center justify-center space-x-2">
+                <button onclick="dispatchSOSNotification()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-2xl text-xs sm:text-sm transition flex items-center justify-center space-x-2 active:scale-98">
                     <i class="fa-solid fa-tower-broadcast"></i>
                     <span>Broadcast GPS to Nearby ER Hospitals</span>
                 </button>
             </div>
 
-            <button onclick="closeSOSModal()" class="text-xs text-slate-400 hover:text-slate-600 font-semibold uppercase tracking-wider">Cancel / Stand Down</button>
+            <button onclick="closeSOSModal()" class="text-[11px] text-slate-400 hover:text-slate-600 font-semibold uppercase tracking-wider">Cancel / Stand Down</button>
         </div>
     </div>
 
-    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3 transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none">
-        <div class="w-2.5 h-2.5 bg-teal-400 rounded-full animate-ping"></div>
-        <span id="toast-message" class="text-xs font-semibold">Notification message</span>
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed bottom-5 right-4 left-4 sm:left-auto z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3 transition-all duration-300 transform translate-y-24 opacity-0 pointer-events-none">
+        <div class="w-2.5 h-2.5 bg-teal-400 rounded-full animate-ping flex-shrink-0"></div>
+        <span id="toast-message" class="text-xs font-semibold truncate">Notification message</span>
     </div>
 
     <script>
@@ -458,7 +477,6 @@
                 icuBedsCount: 9,
                 specialties: ["trauma", "cardio", "dialysis"],
                 waitMinutes: 18,
-                rating: 4.2,
                 image: "https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?auto=format&fit=crop&w=600&q=80"
             },
             {
@@ -473,13 +491,12 @@
                 icuBedsCount: 4,
                 specialties: ["cardio", "pediatrics"],
                 waitMinutes: 10,
-                rating: 4.6,
                 image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80"
             },
             {
                 id: 3,
                 name: "St. Nicholas Hospital",
-                type: "Private Medical & Kidney Transplant Center",
+                type: "Private Medical & Transplant Center",
                 distanceKm: 4.7,
                 etaMins: 12,
                 address: "57 Campbell St, Lagos Island, Lagos",
@@ -488,7 +505,6 @@
                 icuBedsCount: 3,
                 specialties: ["dialysis", "trauma"],
                 waitMinutes: 15,
-                rating: 4.5,
                 image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80"
             },
             {
@@ -503,7 +519,6 @@
                 icuBedsCount: 12,
                 specialties: ["trauma", "maternity", "pediatrics"],
                 waitMinutes: 22,
-                rating: 4.3,
                 image: "https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=600&q=80"
             }
         ];
@@ -514,6 +529,21 @@
             renderHospitals(hospitalDatabase);
             detectLocation();
         });
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const icon = document.getElementById('mobile-menu-icon');
+            if (menu) {
+                const isHidden = menu.classList.contains('hidden');
+                if (isHidden) {
+                    menu.classList.remove('hidden');
+                    if (icon) icon.className = "fa-solid fa-xmark text-lg";
+                } else {
+                    menu.classList.add('hidden');
+                    if (icon) icon.className = "fa-solid fa-bars text-lg";
+                }
+            }
+        }
 
         function showSection(sectionId) {
             const sections = ['search', 'triage', 'ambulance', 'firstaid'];
@@ -537,10 +567,10 @@
 
             if (list.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-white rounded-2xl p-8 text-center border border-slate-100 space-y-3">
-                        <i class="fa-solid fa-hospital-user text-4xl text-slate-300"></i>
-                        <h4 class="font-bold text-slate-700">No medical facilities matching your criteria</h4>
-                        <p class="text-xs text-slate-500">Try adjusting distance slider or clearing search terms.</p>
+                    <div class="bg-white rounded-2xl p-6 text-center border border-slate-100 space-y-2">
+                        <i class="fa-solid fa-hospital-user text-3xl text-slate-300"></i>
+                        <h4 class="font-bold text-slate-700 text-sm">No medical facilities found</h4>
+                        <p class="text-xs text-slate-500">Try broadening your search terms or distance filter.</p>
                     </div>
                 `;
                 return;
@@ -549,41 +579,41 @@
             list.forEach(hosp => {
                 const isSelected = selectedHospital && selectedHospital.id === hosp.id;
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-2xl p-5 shadow-sm border ${isSelected ? 'border-brand-500 ring-2 ring-brand-100' : 'border-slate-100'} hover:border-slate-300 transition duration-200 cursor-pointer flex flex-col sm:flex-row gap-4`;
+                card.className = `bg-white rounded-2xl p-4 sm:p-5 shadow-sm border ${isSelected ? 'border-brand-500 ring-2 ring-brand-100' : 'border-slate-100'} hover:border-slate-300 transition duration-200 cursor-pointer flex flex-col sm:flex-row gap-3 sm:gap-4`;
                 card.onclick = () => selectHospitalById(hosp.id);
 
                 card.innerHTML = `
-                    <img src="${hosp.image}" alt="${hosp.name}" class="w-full sm:w-36 h-32 object-cover rounded-xl flex-shrink-0" onerror="this.src='https://placehold.co/300x200/e2e8f0/1e293b?text=Hospital'">
+                    <img src="${hosp.image}" alt="${hosp.name}" class="w-full sm:w-32 md:w-36 h-28 sm:h-32 object-cover rounded-xl flex-shrink-0" onerror="this.src='https://placehold.co/300x200/e2e8f0/1e293b?text=Hospital'">
                     <div class="flex-1 flex flex-col justify-between">
                         <div>
-                            <div class="flex items-start justify-between">
+                            <div class="flex items-start justify-between gap-2">
                                 <div>
-                                    <span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full uppercase tracking-wider">${hosp.type}</span>
-                                    <h3 class="font-bold text-slate-900 text-base mt-1">${hosp.name}</h3>
+                                    <span class="text-[9px] sm:text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full uppercase tracking-wider">${hosp.type}</span>
+                                    <h3 class="font-bold text-slate-900 text-sm sm:text-base mt-1 leading-snug">${hosp.name}</h3>
                                 </div>
-                                <span class="bg-emerald-50 text-emerald-700 font-extrabold text-xs px-2.5 py-1 rounded-lg border border-emerald-200">${hosp.etaMins} mins ETA</span>
+                                <span class="bg-emerald-50 text-emerald-700 font-extrabold text-[10px] sm:text-xs px-2 py-1 rounded-lg border border-emerald-200 flex-shrink-0">${hosp.etaMins} mins</span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${hosp.address} (${hosp.distanceKm} km away)</p>
+                            <p class="text-xs text-slate-500 mt-1 line-clamp-1"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${hosp.address} (${hosp.distanceKm} km away)</p>
                         </div>
 
-                        <div class="flex items-center space-x-3 mt-3 pt-3 border-t border-slate-100 text-xs">
+                        <div class="flex items-center space-x-2 sm:space-x-3 mt-2 sm:mt-3 pt-2.5 border-t border-slate-100 text-[11px] sm:text-xs">
                             <span class="${hosp.icuAvailable ? 'text-teal-700 font-semibold' : 'text-slate-400'} flex items-center">
-                                <i class="fa-solid fa-bed mr-1"></i> ${hosp.icuAvailable ? `${hosp.icuBedsCount} ICU Beds Free` : 'No ICU Beds'}
+                                <i class="fa-solid fa-bed mr-1"></i> ${hosp.icuAvailable ? `${hosp.icuBedsCount} ICU Beds` : 'No ICU'}
                             </span>
-                            <span class="text-slate-400">|</span>
+                            <span class="text-slate-300">|</span>
                             <span class="text-slate-600 font-medium">
                                 <i class="fa-solid fa-clock text-amber-500 mr-1"></i> ER Queue ~${hosp.waitMinutes}m
                             </span>
                         </div>
 
-                        <div class="flex items-center space-x-2 mt-4">
-                            <button onclick="event.stopPropagation(); triggerCall('${hosp.phone}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center space-x-1">
+                        <div class="flex items-center space-x-2 mt-3">
+                            <button onclick="event.stopPropagation(); triggerCall('${hosp.phone}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded-lg transition flex items-center justify-center space-x-1 active:scale-95">
                                 <i class="fa-solid fa-phone text-brand-600"></i>
-                                <span>Call ER Hotline</span>
+                                <span>Call ER</span>
                             </button>
-                            <button onclick="event.stopPropagation(); routeToHospital(${hosp.id})" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2 rounded-lg transition flex items-center justify-center space-x-1">
+                            <button onclick="event.stopPropagation(); routeToHospital(${hosp.id})" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold py-2 rounded-lg transition flex items-center justify-center space-x-1 active:scale-95">
                                 <i class="fa-solid fa-route"></i>
-                                <span>Navigate</span>
+                                <span>Route</span>
                             </button>
                         </div>
                     </div>
@@ -597,13 +627,13 @@
             if (locText) locText.innerText = "Locating GPS in Nigeria...";
             
             setTimeout(() => {
-                if (locText) locText.innerText = "Yaba / Surulere District, Lagos State, Nigeria (6.5244° N, 3.3792° E)";
+                if (locText) locText.innerText = "Yaba / Surulere District, Lagos State, Nigeria";
                 showToast("GPS Location Updated for Lagos State");
-            }, 1200);
+            }, 1000);
         }
 
         function triggerCall(phoneNumber) {
-            showToast(`Initiating emergency dialer call to: ${phoneNumber}`);
+            showToast(`Initiating call to: ${phoneNumber}`);
         }
 
         function showToast(message) {
@@ -638,7 +668,7 @@
 
         function dispatchSOSNotification() {
             closeSOSModal();
-            showToast("Emergency Signal & GPS Broadcasted to Nearby Hospitals & LASEMA Hotline!");
+            showToast("GPS Location Broadcasted to Nearby ER Units & LASEMA Hotline!");
         }
 
         function filterHospitals() {
@@ -672,11 +702,11 @@
             const navBtn = document.getElementById('map-navigate-btn');
 
             if (targetName) targetName.innerText = found.name;
-            if (targetEta) targetEta.innerText = `Estimated Arrival: ~${found.etaMins} mins (${found.distanceKm} km)`;
+            if (targetEta) targetEta.innerText = `ETA: ~${found.etaMins} mins (${found.distanceKm} km)`;
             if (activeLabel) activeLabel.innerText = `Route locked to ${found.name}`;
             if (navBtn) navBtn.disabled = false;
 
-            showToast(`Target hospital set: ${found.name}`);
+            showToast(`Hospital set: ${found.name}`);
         }
 
         function routeToHospital(id) {
@@ -709,11 +739,11 @@
                 resBox.className = "mt-4 p-4 rounded-xl border bg-red-50 border-red-200 text-red-900";
                 resBox.innerHTML = `
                     <div class="flex items-start space-x-3">
-                        <i class="fa-solid fa-triangle-exclamation text-xl text-red-600 mt-0.5"></i>
+                        <i class="fa-solid fa-triangle-exclamation text-xl text-red-600 mt-0.5 flex-shrink-0"></i>
                         <div>
-                            <h4 class="font-bold text-sm">HIGH PRIORITY EMERGENCY</h4>
+                            <h4 class="font-bold text-xs sm:text-sm">HIGH PRIORITY EMERGENCY</h4>
                             <p class="text-xs mt-1">Requires immediate emergency transport or Level 1 Trauma ER attention.</p>
-                            <button onclick="showSection('ambulance')" class="mt-3 bg-red-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg">Dispatch Ambulance Now</button>
+                            <button onclick="showSection('ambulance')" class="mt-3 bg-red-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg active:scale-95">Dispatch Ambulance Now</button>
                         </div>
                     </div>
                 `;
@@ -721,11 +751,11 @@
                 resBox.className = "mt-4 p-4 rounded-xl border bg-emerald-50 border-emerald-200 text-emerald-900";
                 resBox.innerHTML = `
                     <div class="flex items-start space-x-3">
-                        <i class="fa-solid fa-circle-check text-xl text-emerald-600 mt-0.5"></i>
+                        <i class="fa-solid fa-circle-check text-xl text-emerald-600 mt-0.5 flex-shrink-0"></i>
                         <div>
-                            <h4 class="font-bold text-sm">MODERATE / URGENT CARE STATUS</h4>
+                            <h4 class="font-bold text-xs sm:text-sm">MODERATE / URGENT CARE STATUS</h4>
                             <p class="text-xs mt-1">Facility visit is advised. Proceeding to nearest ER or Urgent Care clinic.</p>
-                            <button onclick="showSection('search')" class="mt-3 bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg">View Nearest Facilities</button>
+                            <button onclick="showSection('search')" class="mt-3 bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg active:scale-95">View Facilities</button>
                         </div>
                     </div>
                 `;
